@@ -7,7 +7,6 @@ export const router = Router();
 router.get("/", (req, res, next) => {
     try {
         res.json(users);
-
     } catch (err) {
         next(err);
     }
