@@ -1,6 +1,7 @@
 import express from "express";
 import { users } from "./fakeDB/fakeUsers.js";
-import { router } from "./routes/index.js";
+import { router as apiRoutes } from "./routes/index.js"; // ใช้ชื่อ apiRoutes ที่ import มา
+import { connectDB } from "./config/db.js";
 
 const app = express();
 
@@ -169,7 +170,8 @@ app.get("/", (req, res) => {
 </html>`)
 })
 
-app.use("/api", router);
+// แก้ไขตรงนี้เป็น apiRoutes ให้ตรงกับที่ import มา
+app.use("/api", apiRoutes);
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -181,6 +183,17 @@ app.use((err, req, res, next) => {
 
 const PORT = 3001;
 
-app.listen(PORT, () => {
+async function start() {
+  try{
+    await connectDB();
+
+    app.listen(PORT, () => {
     console.log(`Server running on PORT:${PORT} 🟢`);
-});
+  });
+  } catch (err) {
+    console.error("Failed to connect to MongoDB:", err.message);
+    process.exit(1);
+  }
+};
+
+start();

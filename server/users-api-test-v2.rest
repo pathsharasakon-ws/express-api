@@ -1,0 +1,29 @@
+@baseUrl = http://localhost:3001/api/v2
+@userId = 6a9e6dbf081f2b56c0f9edac
+
+### Read all users
+GET {{baseUrl}}/users
+
+### Create a new user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "username": "Pathsharasakon",
+    "email": "pathsharasakon@example.com",
+    "password": "pass1234"
+}
+
+### แก้ไข user
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "username": "Pathsharasakon Updated",
+  "email": "pathsharasakon.updated@example.com",
+  "password": "newpass1234"
+}
+
+
+### ลบ user
+DELETE {{baseUrl}}/users/{{userId}}
