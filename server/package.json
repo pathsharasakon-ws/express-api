@@ -1,5 +1,13 @@
 {
+  "name": "server",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/server.js",
+    "start": "node --env-file=.env src/server.js"
+  },
   "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
     "mongoose": "^9.9.5"
   }
 }

@@ -1,0 +1,30 @@
+@baseUrl = http://localhost:3001/api/v2/users
+
+### Get All Users
+GET {{baseUrl}}/pg
+
+### Create User
+# @name createUser
+POST {{baseUrl}}/pg
+Content-Type: application/json
+
+{
+    "username": "bug bunny",
+    "email": "bugbunny{{$timestamp}}@example.com",
+    "password": "password123"
+}
+
+### ID จาก Create User
+@userId = {{createUser.response.body.$.data.id}}
+
+### Update User
+PUT {{baseUrl}}/pg/{{userId}}
+Content-Type: application/json
+
+{
+    "username": "bbunny",
+    "email": "bbunny@example.com"
+}
+
+### Delete User
+DELETE {{baseUrl}}/pg/{{userId}}

@@ -2,6 +2,7 @@ import express from "express";
 import { users } from "./fakeDB/fakeUsers.js";
 import { router as apiRoutes } from "./routes/index.js"; // ใช้ชื่อ apiRoutes ที่ import มา
 import { connectDB } from "./config/db.js";
+import { connectSupabase } from "./config/supabase.js";
 
 const app = express();
 
@@ -186,7 +187,7 @@ const PORT = 3001;
 async function start() {
   try{
     await connectDB();
-
+    await connectSupabase();
     app.listen(PORT, () => {
     console.log(`Server running on PORT:${PORT} 🟢`);
   });
