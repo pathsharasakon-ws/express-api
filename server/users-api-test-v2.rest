@@ -1,5 +1,5 @@
-@baseUrl = http://localhost:3001/api/v2
-@userId = 6a9e6dbf081f2b56c0f9edac
+@baseUrl = http://127.0.0.1:3001/api/v2
+@userId = 6aa0dd9d40be8044ca58796f
 
 ### Read all users
 GET {{baseUrl}}/users
@@ -9,8 +9,8 @@ POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-    "username": "Pathsharasakon",
-    "email": "pathsharasakon@example.com",
+    "username": "Maxim",
+    "email": "Maxim@example.com",
     "password": "pass1234"
 }
 
@@ -19,11 +19,37 @@ PUT {{baseUrl}}/users/{{userId}}
 Content-Type: application/json
 
 {
-  "username": "Pathsharasakon Updated",
-  "email": "pathsharasakon.updated@example.com",
+  "username": "Maximus",
+  "email": "Maximus@example.com",
   "password": "newpass1234"
 }
 
+### Login สำเร็จ (Success Case)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "David@example.com",
+  "password": "pass1234"
+}
+
+### Login ล้มเหลว - รหัสผ่านผิด (Failed - Wrong Password)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "David@example.com",
+  "password": "wrongpassword"
+}
+
+### Login ล้มเหลว - ไม่มีอีเมลนี้ในระบบ (Failed - User Not Found)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "notfound@example.com",
+  "password": "pass1234"
+}
 
 ### ลบ user
 DELETE {{baseUrl}}/users/{{userId}}

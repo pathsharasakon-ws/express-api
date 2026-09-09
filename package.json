@@ -7,10 +7,11 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "node --env-file=.env --watch server/src/server.js",
-    "start": "node server/src/server.js"
+    "dev": "node --env-file=server/.env --watch server/src/server.js",
+    "start": "node --env-file=server/.env server/src/server.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "express": "^5.2.1"
   }
 }
