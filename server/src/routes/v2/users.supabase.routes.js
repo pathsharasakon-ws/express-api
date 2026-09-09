@@ -1,16 +1,19 @@
 import { Router } from "express";
+import bcrypt from "bcrypt";
 import { supabase } from "../../config/supabase.js";
 
 export const router = Router();
 
 const PG_SELECT = "id, username, email, role, created_at, updated_at";
+const LOGIN_SELECT = "id, username, email, role, created_at, updated_at, password";
+const SALT_ROUNDS = 12;
 
-const isValidUuid = (value) => {
-    const uuidPattern =
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+async function hashPassword(password) {
+    return bcrypt.hash(password, SALT_ROUNDS);
+}
 
-    return uuidPattern.test(value);
-};
+const isValidUuid = (value) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 
 // Get all users
 router.get("/pg", async (req, res, next) => {
@@ -30,7 +33,7 @@ router.get("/pg", async (req, res, next) => {
     }
 });
 
-// Create user
+// Register user
 router.post("/pg", async (req, res, next) => {
     try {
         const { username, email, password } = req.body;
@@ -41,17 +44,85 @@ router.post("/pg", async (req, res, next) => {
             });
         }
 
+        if (password.length < 8) {
+            return res.status(400).json({
+                error: "Password must be at least 8 characters",
+            });
+        }
+
+        const hashedPassword = await hashPassword(password);
+
         const { data, error } = await supabase
             .from("users")
-            .insert([{ username, email, password }])
+            .insert({
+                username: username.trim(),
+                email: email.trim().toLowerCase(),
+                password: hashedPassword,
+            })
             .select(PG_SELECT)
             .single();
+
+        if (error?.code === "23505") {
+            return res.status(409).json({
+                error: "Email is already registered",
+            });
+        }
 
         if (error) throw error;
 
         return res.status(201).json({
             success: true,
             data,
+        });
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Login user
+router.post("/pg/login", async (req, res, next) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                error: "email and password are required!",
+            });
+        }
+
+        const { data: user, error } = await supabase
+            .from("users")
+            .select(LOGIN_SELECT)
+            .eq("email", email.trim().toLowerCase())
+            .maybeSingle();
+
+        if (error) throw error;
+
+        if (!user) {
+            return res.status(401).json({
+                error: "Invalid email or password",
+            });
+        }
+
+        const passwordMatches = await bcrypt.compare(password, user.password);
+
+        if (!passwordMatches) {
+            return res.status(401).json({
+                error: "Invalid email or password",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Login successful",
+            data: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                created_at: user.created_at,
+                updated_at: user.updated_at,
+            },
         });
     } catch (err) {
         next(err);
@@ -72,9 +143,22 @@ router.put("/pg/:id", async (req, res, next) => {
 
         const updateData = {};
 
-        if (username) updateData.username = username;
-        if (email) updateData.email = email;
-        if (password) updateData.password = password;
+        if (username) {
+            updateData.username = username.trim();
+        }
+
+        if (email) {
+            updateData.email = email.trim().toLowerCase();
+        }
+
+        if (password) {
+            if (password.length < 8) {
+                return res.status(400).json({
+                    error: "Password must be at least 8 characters",
+                });
+            }
+            updateData.password = await hashPassword(password);
+        }
 
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({
@@ -88,6 +172,12 @@ router.put("/pg/:id", async (req, res, next) => {
             .eq("id", userId)
             .select(PG_SELECT)
             .maybeSingle();
+
+        if (error?.code === "23505") {
+            return res.status(409).json({
+                error: "Email is already registered",
+            });
+        }
 
         if (error) throw error;
 

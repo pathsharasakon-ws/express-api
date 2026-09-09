@@ -1,21 +1,61 @@
 @baseUrl = http://localhost:3001/api/v2/users
+@password = password123
+@newPassword = newpassword123
 
 ### Get All Users
 GET {{baseUrl}}/pg
 
-### Create User
-# @name createUser
+### Register User
+# @name registerUser
 POST {{baseUrl}}/pg
 Content-Type: application/json
 
 {
-    "username": "bug bunny",
-    "email": "bugbunny{{$timestamp}}@example.com",
-    "password": "password123"
+    "username": "Alisa",
+    "email": "Alisa{{$timestamp}}@example.com",
+    "password": "{{password}}"
 }
 
-### ID จาก Create User
-@userId = {{createUser.response.body.$.data.id}}
+### นำ ID และ Email จาก Register ไปใช้ต่ออัตโนมัติ
+@userId = {{registerUser.response.body.$.data.id}}
+@registeredEmail = {{registerUser.response.body.$.data.email}}
+
+### Register Duplicate Email - ควรได้ 409
+POST {{baseUrl}}/pg
+Content-Type: application/json
+
+{
+    "username": "duplicate user",
+    "email": "{{registeredEmail}}",
+    "password": "{{password}}"
+}
+
+### Login Success - ควรได้ 200
+POST {{baseUrl}}/pg/login
+Content-Type: application/json
+
+{
+    "email": "{{registeredEmail}}",
+    "password": "{{password}}"
+}
+
+### Login Wrong Password - ควรได้ 401
+POST {{baseUrl}}/pg/login
+Content-Type: application/json
+
+{
+    "email": "{{registeredEmail}}",
+    "password": "wrong-password"
+}
+
+### Login Email Not Found - ควรได้ 401
+POST {{baseUrl}}/pg/login
+Content-Type: application/json
+
+{
+    "email": "not-found-{{$timestamp}}@example.com",
+    "password": "{{password}}"
+}
 
 ### Update User
 PUT {{baseUrl}}/pg/{{userId}}
@@ -23,7 +63,17 @@ Content-Type: application/json
 
 {
     "username": "bbunny",
-    "email": "bbunny@example.com"
+    "email": "{{registeredEmail}}",
+    "password": "{{newPassword}}"
+}
+
+### Login With New Password - ควรได้ 200 (ยิงหลัง Update)
+POST {{baseUrl}}/pg/login
+Content-Type: application/json
+
+{
+    "email": "{{registeredEmail}}",
+    "password": "{{newPassword}}"
 }
 
 ### Delete User

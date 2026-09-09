@@ -8,6 +8,8 @@ export default function App() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [editingId, setEditingId] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
+  const [formMode, setFormMode] = useState("signup");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -29,11 +31,21 @@ export default function App() {
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const url = editingId ? `${API_URL}/${editingId}` : API_URL;
-    const method = editingId ? "PUT" : "POST";
-    const body = { username, email };
+    let url = API_URL;
+    let method = "POST";
+    let body = { username, email, password };
 
-    if (!editingId || password) body.password = password;
+    if (formMode === "login") {
+      url = `${API_URL}/login`;
+      body = { email, password };
+    }
+
+    if (editingId) {
+      url = `${API_URL}/${editingId}`;
+      method = "PUT";
+      body = { username, email };
+      if (password) body.password = password;
+    }
 
     try {
       const response = await fetch(url, {
@@ -45,7 +57,10 @@ export default function App() {
 
       if (!response.ok) throw new Error(result.message || result.error);
 
-      setMessage(editingId ? "Account updated successfully" : "Account created successfully");
+      if (editingId) setMessage("Account updated successfully");
+      else if (formMode === "login") setMessage(`Welcome back, ${result.data.username}`);
+      else setMessage("Account created successfully");
+
       clearForm();
       getUsers();
     } catch (error) {
@@ -55,6 +70,7 @@ export default function App() {
 
   function editUser(user) {
     setEditingId(user.id);
+    setFormMode("signup");
     setUsername(user.username);
     setEmail(user.email);
     setPassword("");
@@ -63,8 +79,6 @@ export default function App() {
   }
 
   async function deleteUser(id) {
-    if (!window.confirm("Delete this account?")) return;
-
     try {
       const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
       const result = await response.json();
@@ -72,6 +86,7 @@ export default function App() {
       if (!response.ok) throw new Error(result.message || result.error);
 
       setMessage("Account deleted successfully");
+      setDeleteId(null);
       getUsers();
     } catch (error) {
       setMessage(`Error: ${error.message}`);
@@ -83,6 +98,12 @@ export default function App() {
     setEmail("");
     setPassword("");
     setEditingId(null);
+  }
+
+  function changeForm(mode) {
+    clearForm();
+    setFormMode(mode);
+    setMessage("");
   }
 
   return (
@@ -105,20 +126,33 @@ export default function App() {
 
         <div className="grid items-start gap-12 lg:grid-cols-[340px_1fr] lg:gap-20">
           <form onSubmit={handleSubmit}>
+            {!editingId && (
+              <div className="mb-8 flex border-b border-zinc-200">
+                <button type="button" onClick={() => changeForm("signup")} className={`flex-1 border-b-2 pb-3 text-sm font-medium ${formMode === "signup" ? "border-zinc-950 text-zinc-950" : "border-transparent text-zinc-400"}`}>
+                  Sign up
+                </button>
+                <button type="button" onClick={() => changeForm("login")} className={`flex-1 border-b-2 pb-3 text-sm font-medium ${formMode === "login" ? "border-zinc-950 text-zinc-950" : "border-transparent text-zinc-400"}`}>
+                  Login
+                </button>
+              </div>
+            )}
+
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-emerald-600">
-              {editingId ? "EDIT ACCOUNT" : "NEW MEMBER"}
+              {editingId ? "EDIT ACCOUNT" : formMode === "login" ? "WELCOME BACK" : "NEW MEMBER"}
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight">
-              {editingId ? "Edit account" : "Create account"}
+              {editingId ? "Edit account" : formMode === "login" ? "Login to your account" : "Create account"}
             </h2>
             <p className="mb-8 mt-2 text-sm leading-6 text-zinc-500">
-              {editingId ? "Update the member information below." : "Sign up a new member using the form below."}
+              {editingId ? "Update the member information below." : formMode === "login" ? "Enter your email and password to continue." : "Sign up a new member using the form below."}
             </p>
 
-            <label className="mb-4 block">
-              <span className="mb-2 block text-sm font-medium text-zinc-700">Username</span>
-              <input value={username} onChange={(event) => setUsername(event.target.value)} required placeholder="Enter username" className="w-full border-0 border-b border-zinc-300 bg-transparent px-0 py-3 outline-none transition placeholder:text-zinc-300 focus:border-zinc-950" />
-            </label>
+            {formMode === "signup" && (
+              <label className="mb-4 block">
+                <span className="mb-2 block text-sm font-medium text-zinc-700">Username</span>
+                <input value={username} onChange={(event) => setUsername(event.target.value)} required placeholder="Enter username" className="w-full border-0 border-b border-zinc-300 bg-transparent px-0 py-3 outline-none transition placeholder:text-zinc-300 focus:border-zinc-950" />
+              </label>
+            )}
 
             <label className="mb-4 block">
               <span className="mb-2 block text-sm font-medium text-zinc-700">Email</span>
@@ -127,11 +161,11 @@ export default function App() {
 
             <label className="mb-6 block">
               <span className="mb-2 block text-sm font-medium text-zinc-700">Password</span>
-              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required={!editingId} placeholder={editingId ? "Leave blank to keep current" : "Enter password"} className="w-full border-0 border-b border-zinc-300 bg-transparent px-0 py-3 outline-none transition placeholder:text-zinc-300 focus:border-zinc-950" />
+              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required={!editingId} minLength={editingId ? undefined : 8} placeholder={editingId ? "Leave blank to keep current" : "Enter password"} className="w-full border-0 border-b border-zinc-300 bg-transparent px-0 py-3 outline-none transition placeholder:text-zinc-300 focus:border-zinc-950" />
             </label>
 
             <button type="submit" className="w-full rounded-lg bg-zinc-950 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-600">
-              {editingId ? "Save changes" : "Sign up"}
+              {editingId ? "Save changes" : formMode === "login" ? "Login" : "Create account"}
             </button>
 
             {editingId && (
@@ -164,12 +198,25 @@ export default function App() {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <button type="button" onClick={() => editUser(user)} className="px-2 py-2 text-sm text-zinc-500 transition hover:text-zinc-950">
-                        Edit
-                      </button>
-                      <button type="button" onClick={() => deleteUser(user.id)} className="px-2 py-2 text-sm text-zinc-400 transition hover:text-red-600">
-                        Delete
-                      </button>
+                      {deleteId === user.id ? (
+                        <>
+                          <button type="button" onClick={() => deleteUser(user.id)} className="px-2 py-2 text-sm font-medium text-red-600 hover:text-red-800">
+                            Confirm
+                          </button>
+                          <button type="button" onClick={() => setDeleteId(null)} className="px-2 py-2 text-sm text-zinc-400 hover:text-zinc-950">
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button type="button" onClick={() => editUser(user)} className="px-2 py-2 text-sm text-zinc-500 transition hover:text-zinc-950">
+                            Edit
+                          </button>
+                          <button type="button" onClick={() => setDeleteId(user.id)} className="px-2 py-2 text-sm text-zinc-400 transition hover:text-red-600">
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
