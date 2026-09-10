@@ -5,6 +5,8 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
+    minify: false,
+    cssMinify: false,
     rollupOptions: {
       output: {
         entryFileNames: "assets/app.js",
