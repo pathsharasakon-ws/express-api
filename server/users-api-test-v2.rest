@@ -1,0 +1,30 @@
+@baseUrl = http://127.0.0.1:3001/api/v2
+@userId = 6aa0dd9d40be8044ca58796f
+
+### Read all users
+GET {{baseUrl}}/users
+
+### Create a new user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "username": "Kattherin",
+    "role": "admin",
+    "email": "kattherin@example.com",
+    "password": "pass1234"
+}
+
+### แก้ไข user
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "username": "Maximus",
+  "role": "user",
+  "email": "Maximus@example.com",
+  "password": "newpass1234"
+}
+
+### ลบ user
+DELETE {{baseUrl}}/users/{{userId}}

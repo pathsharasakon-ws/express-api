@@ -1,10 +1,13 @@
 import express from "express";
-import { users } from "./fakeDB/fakeUsers.js";
-import { router } from "./routes/index.js";
+import cookieParser from "cookie-parser";
+import { router as apiRoutes } from "./routes/index.js";
+import { connectDB } from "./config/db.js";
+import { connectSupabase } from "./config/supabase.js";
 
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
+app.use(cookieParser());
 
 // CRUD routes and endpoints
 
@@ -169,7 +172,13 @@ app.get("/", (req, res) => {
 </html>`)
 })
 
-app.use("/api", router);
+// API Routes
+app.use("/api", apiRoutes);
+
+// 404 Not Found Middleware
+app.use((req, res) => {
+  return res.status(404).json({ error: "Endpoint not found" });
+});
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -181,6 +190,17 @@ app.use((err, req, res, next) => {
 
 const PORT = 3001;
 
-app.listen(PORT, () => {
+async function start() {
+  try{
+    await connectDB();
+    await connectSupabase();
+    app.listen(PORT, () => {
     console.log(`Server running on PORT:${PORT} 🟢`);
-});
+  });
+  } catch (err) {
+    console.error("Failed to connect to MongoDB:", err.message);
+    process.exit(1);
+  }
+};
+
+start();
