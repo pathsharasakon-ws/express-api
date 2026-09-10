@@ -1,0 +1,46 @@
+@baseUrl = http://127.0.0.1:3001/api/v2
+@userId = 6aa0dd9d40be8044ca58796f
+@email = kattherin@example.com
+@password = pass1234
+
+### 1. Login สำเร็จ (ใช้ตัวแปร)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### 2. Check user token (อ่าน Cookie accessToken ที่ได้หลัง Login)
+GET {{baseUrl}}/users/auth
+
+### 3. Login สำเร็จ (ใส่ข้อมูลตรง)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "kattherin@example.com",
+  "password": "pass1234"
+}
+
+### 4. Login ล้มเหลว - รหัสผ่านผิด (Failed - Wrong Password)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "kattherin@example.com",
+  "password": "wrongpassword"
+}
+
+### 5. Login ล้มเหลว - ไม่มีอีเมลนี้ในระบบ (Failed - User Not Found)
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "notfound@example.com",
+  "password": "pass1234"
+}
+
+### 6. Logout (เคลียร์ Cookie)
+POST {{baseUrl}}/users/logout

@@ -1,12 +1,17 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import { users } from "./fakeDB/fakeUsers.js";
-import { router as apiRoutes } from "./routes/index.js"; // ใช้ชื่อ apiRoutes ที่ import มา
+import { router as apiRoutes } from "./routes/index.js";
+import { router as v1Router } from "./routes/v1/index.js";
+import { router as v2Router } from "./routes/v2/index.js"; 
 import { connectDB } from "./config/db.js";
 import { connectSupabase } from "./config/supabase.js";
 
+
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
+app.use(cookieParser());
 
 // CRUD routes and endpoints
 
@@ -171,8 +176,13 @@ app.get("/", (req, res) => {
 </html>`)
 })
 
-// แก้ไขตรงนี้เป็น apiRoutes ให้ตรงกับที่ import มา
+// API Routes
 app.use("/api", apiRoutes);
+
+// 404 Not Found Middleware
+app.use((req, res) => {
+  return res.status(404).json({ error: "Endpoint not found" });
+});
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {

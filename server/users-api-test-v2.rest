@@ -9,8 +9,9 @@ POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-    "username": "Maxim",
-    "email": "Maxim@example.com",
+    "username": "Kattherin",
+    "role": "admin",
+    "email": "kattherin@example.com",
     "password": "pass1234"
 }
 
@@ -20,35 +21,9 @@ Content-Type: application/json
 
 {
   "username": "Maximus",
+  "role": "user",
   "email": "Maximus@example.com",
   "password": "newpass1234"
-}
-
-### Login สำเร็จ (Success Case)
-POST {{baseUrl}}/users/login
-Content-Type: application/json
-
-{
-  "email": "David@example.com",
-  "password": "pass1234"
-}
-
-### Login ล้มเหลว - รหัสผ่านผิด (Failed - Wrong Password)
-POST {{baseUrl}}/users/login
-Content-Type: application/json
-
-{
-  "email": "David@example.com",
-  "password": "wrongpassword"
-}
-
-### Login ล้มเหลว - ไม่มีอีเมลนี้ในระบบ (Failed - User Not Found)
-POST {{baseUrl}}/users/login
-Content-Type: application/json
-
-{
-  "email": "notfound@example.com",
-  "password": "pass1234"
 }
 
 ### ลบ user
