@@ -1,12 +1,8 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import { users } from "./fakeDB/fakeUsers.js";
 import { router as apiRoutes } from "./routes/index.js";
-import { router as v1Router } from "./routes/v1/index.js";
-import { router as v2Router } from "./routes/v2/index.js"; 
 import { connectDB } from "./config/db.js";
 import { connectSupabase } from "./config/supabase.js";
-
 
 const app = express();
 
