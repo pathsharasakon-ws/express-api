@@ -10166,24 +10166,255 @@ var require_jsx_runtime = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	module.exports = require_react_jsx_runtime_production();
 }));
 //#endregion
-//#region src/MongoUsersApp.jsx
-var import_client = require_client();
+//#region src/components/AdminTable.jsx
 var import_react = require_react();
+var import_client = require_client();
 var import_jsx_runtime = require_jsx_runtime();
-var API_URL = "/api/v2/users";
+function AdminTable({ form, mode, editingId, submitting, onChange, onSubmit, onModeChange, onCancel }) {
+	let title = "Add user";
+	let buttonText = "Add user";
+	if (mode === "login") {
+		title = "Login";
+		buttonText = "Login";
+	}
+	if (editingId) {
+		title = "Edit user";
+		buttonText = "Save";
+	}
+	if (submitting) buttonText = "Saving...";
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("aside", {
+		className: "account-panel",
+		children: [
+			!editingId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "mode-switch",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					className: mode === "create" ? "active" : "",
+					type: "button",
+					onClick: () => onModeChange("create"),
+					children: "Create"
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					className: mode === "login" ? "active" : "",
+					type: "button",
+					onClick: () => onModeChange("login"),
+					children: "Login"
+				})]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "panel-heading",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: title })
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
+				onSubmit,
+				children: [
+					mode !== "login" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+						className: "field-row",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+							className: "field",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Name" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+								name: "username",
+								value: form.username,
+								onChange,
+								placeholder: "Enter name",
+								required: true
+							})]
+						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+							className: "field",
+							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Role" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", {
+								name: "role",
+								value: form.role,
+								onChange,
+								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+									value: "user",
+									children: "User"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
+									value: "admin",
+									children: "Admin"
+								})]
+							})]
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+						className: "field",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Email" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+							name: "email",
+							type: "email",
+							value: form.email,
+							onChange,
+							placeholder: "Enter email",
+							autoComplete: "email",
+							required: true
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+						className: "field",
+						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Password" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+							name: "password",
+							type: "password",
+							value: form.password,
+							onChange,
+							placeholder: editingId ? "New password (optional)" : "Enter password",
+							required: !editingId,
+							minLength: editingId ? void 0 : 8
+						})]
+					}),
+					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+						className: "primary-button",
+						type: "submit",
+						disabled: submitting,
+						children: buttonText
+					}),
+					editingId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+						className: "cancel-button",
+						type: "button",
+						onClick: onCancel,
+						children: "Cancel"
+					})
+				]
+			})
+		]
+	});
+}
+//#endregion
+//#region src/components/Navbar.jsx
+function Navbar({ currentUser, onLogin, onLogout }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", {
+		className: "topbar",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
+				className: "brand",
+				href: "#top",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "brand-mark",
+					children: "U"
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "USERS" })]
+			}),
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "database-status",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "status-pulse" }), "MongoDB connected"]
+			}),
+			currentUser ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "session-user",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+					className: "session-name",
+					children: currentUser.username
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+					className: "text-button",
+					type: "button",
+					onClick: onLogout,
+					children: "Sign out"
+				})]
+			}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+				className: "text-button",
+				type: "button",
+				onClick: onLogin,
+				children: "Login"
+			})
+		]
+	});
+}
+//#endregion
+//#region src/components/UserTable.jsx
+function getInitials(username = "") {
+	return username.slice(0, 2).toUpperCase();
+}
+function UserTable({ users, totalUsers, search, loading, deleteId, onSearch, onEdit, onDelete, onCancelDelete }) {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
+		className: "directory-panel",
+		children: [
+			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "directory-head",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "user-title",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Users" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
+						className: "total-count",
+						children: [totalUsers, " users"]
+					})]
+				}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
+					className: "search-box",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+						"aria-hidden": "true",
+						children: "⌕"
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
+						value: search,
+						onChange: onSearch,
+						placeholder: "Search users",
+						"aria-label": "Search users"
+					})]
+				})]
+			}),
+			loading && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+				className: "state-box",
+				children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "loader" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Loading users..." })]
+			}),
+			!loading && users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "state-box",
+				children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "No users found" })
+			}),
+			!loading && users.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+				className: "member-grid",
+				children: users.map((user) => {
+					const role = user.role === "admin" ? "admin" : "user";
+					return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("article", {
+						className: "member-card",
+						children: [
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "avatar-wrap",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: "member-avatar",
+									children: getInitials(user.username)
+								})
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: user.username }),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
+								className: "member-email",
+								children: user.email
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "card-topline",
+								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
+									className: `role-chip role-${role}`,
+									children: role
+								})
+							}),
+							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
+								className: "card-actions",
+								children: deleteId === user._id ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+									className: "danger-action",
+									type: "button",
+									onClick: () => onDelete(user._id),
+									children: "Delete user"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+									type: "button",
+									onClick: onCancelDelete,
+									children: "Cancel"
+								})] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+									type: "button",
+									onClick: () => onEdit(user),
+									children: "Edit"
+								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+									className: "delete-action",
+									type: "button",
+									onClick: () => onDelete(user._id, true),
+									children: "Delete"
+								})] })
+							})
+						]
+					}, user._id);
+				})
+			})
+		]
+	});
+}
+//#endregion
+//#region src/views/Home.jsx
+var API = "/api/v2/users";
 var EMPTY_FORM = {
 	username: "",
 	role: "user",
 	email: "",
 	password: ""
 };
-var initials = (name = "") => name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-var joined = (date) => date ? new Intl.DateTimeFormat("en", {
-	month: "short",
-	day: "numeric",
-	year: "numeric"
-}).format(new Date(date)) : "Recently";
-function MongoUsersApp() {
+function Home() {
 	const [users, setUsers] = (0, import_react.useState)([]);
 	const [form, setForm] = (0, import_react.useState)(EMPTY_FORM);
 	const [mode, setMode] = (0, import_react.useState)("create");
@@ -10191,441 +10422,215 @@ function MongoUsersApp() {
 	const [deleteId, setDeleteId] = (0, import_react.useState)(null);
 	const [currentUser, setCurrentUser] = (0, import_react.useState)(null);
 	const [search, setSearch] = (0, import_react.useState)("");
-	const [notice, setNotice] = (0, import_react.useState)(null);
+	const [message, setMessage] = (0, import_react.useState)("");
+	const [error, setError] = (0, import_react.useState)(false);
 	const [loading, setLoading] = (0, import_react.useState)(true);
 	const [submitting, setSubmitting] = (0, import_react.useState)(false);
 	const filteredUsers = (0, import_react.useMemo)(() => {
-		const query = search.trim().toLowerCase();
-		return query ? users.filter((user) => [
-			user.username,
-			user.email,
-			user.role
-		].some((value) => value?.toLowerCase().includes(query))) : users;
+		const keyword = search.trim().toLowerCase();
+		if (!keyword) return users;
+		return users.filter((user) => {
+			const username = user.username?.toLowerCase() || "";
+			const email = user.email?.toLowerCase() || "";
+			const role = user.role?.toLowerCase() || "";
+			return username.includes(keyword) || email.includes(keyword) || role.includes(keyword);
+		});
 	}, [search, users]);
 	(0, import_react.useEffect)(() => {
-		loadUsers();
-		checkSession();
+		fetchUsers();
+		checkLogin();
 	}, []);
-	async function request(url, options = {}) {
+	async function sendRequest(url, options = {}) {
 		const response = await fetch(url, {
 			credentials: "include",
-			...options,
-			headers: options.body ? {
-				"Content-Type": "application/json",
-				...options.headers
-			} : options.headers
+			...options
 		});
-		const result = await response.json();
-		if (!response.ok) throw new Error(result.error || result.message || "Request failed");
-		return result;
+		const data = await response.json();
+		if (!response.ok) throw new Error(data.error || data.message || "Request failed");
+		return data;
 	}
-	async function loadUsers() {
+	async function fetchUsers() {
 		setLoading(true);
 		try {
-			setUsers(await request(API_URL));
-		} catch (error) {
-			setNotice({
-				type: "error",
-				text: error.message
-			});
+			const data = await sendRequest(API);
+			setUsers(data);
+		} catch (requestError) {
+			showMessage(requestError.message, true);
 		} finally {
 			setLoading(false);
 		}
 	}
-	async function checkSession() {
+	async function checkLogin() {
 		try {
-			setCurrentUser((await request(`${API_URL}/auth`)).data);
+			const data = await sendRequest(`${API}/auth`);
+			setCurrentUser(data.data);
 		} catch {
 			setCurrentUser(null);
 		}
+	}
+	function showMessage(text, isError = false) {
+		setMessage(text);
+		setError(isError);
+	}
+	function handleChange(event) {
+		const { name, value } = event.target;
+		setForm({
+			...form,
+			[name]: value
+		});
 	}
 	function resetForm(nextMode = "create") {
 		setForm(EMPTY_FORM);
 		setEditingId(null);
 		setMode(nextMode);
-		setNotice(null);
+		setMessage("");
 	}
 	async function handleSubmit(event) {
 		event.preventDefault();
 		setSubmitting(true);
-		setNotice(null);
+		setMessage("");
 		try {
-			if (mode === "login") {
-				const result = await request(`${API_URL}/login`, {
-					method: "POST",
-					body: JSON.stringify({
-						email: form.email,
-						password: form.password
-					})
-				});
-				setCurrentUser(result.user);
-				setNotice({
-					type: "success",
-					text: `Welcome back, ${result.user.username}.`
-				});
-			} else if (editingId) {
-				const payload = {
-					username: form.username,
-					role: form.role,
-					email: form.email
-				};
-				if (form.password) payload.password = form.password;
-				await request(`${API_URL}/${editingId}`, {
-					method: "PUT",
-					body: JSON.stringify(payload)
-				});
-				setForm(EMPTY_FORM);
-				setEditingId(null);
-				setNotice({
-					type: "success",
-					text: "Member profile updated."
-				});
-				await loadUsers();
-			} else {
-				await request(API_URL, {
-					method: "POST",
-					body: JSON.stringify(form)
-				});
-				setForm(EMPTY_FORM);
-				setNotice({
-					type: "success",
-					text: "New member added to MongoDB."
-				});
-				await loadUsers();
-			}
-		} catch (error) {
-			setNotice({
-				type: "error",
-				text: error.message
-			});
+			if (mode === "login") await loginUser();
+			else if (editingId) await updateUser();
+			else await createUser();
+		} catch (requestError) {
+			showMessage(requestError.message, true);
 		} finally {
 			setSubmitting(false);
 		}
 	}
+	async function loginUser() {
+		const body = {
+			email: form.email,
+			password: form.password
+		};
+		const data = await sendRequest(`${API}/login`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body)
+		});
+		setCurrentUser(data.user);
+		showMessage(`Welcome back, ${data.user.username}.`);
+	}
+	async function createUser() {
+		await sendRequest(API, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(form)
+		});
+		setForm(EMPTY_FORM);
+		showMessage("User added successfully.");
+		await fetchUsers();
+	}
+	async function updateUser() {
+		const body = {
+			username: form.username,
+			role: form.role,
+			email: form.email
+		};
+		if (form.password) body.password = form.password;
+		await sendRequest(`${API}/${editingId}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body)
+		});
+		resetForm();
+		showMessage("User updated successfully.");
+		await fetchUsers();
+	}
 	function editUser(user) {
-		setMode("create");
 		setEditingId(user._id);
+		setMode("create");
 		setDeleteId(null);
-		setNotice(null);
+		setMessage("");
 		setForm({
 			username: user.username,
 			role: user.role === "admin" ? "admin" : "user",
 			email: user.email,
 			password: ""
 		});
-		document.querySelector(".account-panel")?.scrollIntoView({
-			behavior: "smooth",
-			block: "start"
-		});
 	}
-	async function deleteUser(id) {
+	async function deleteUser(id, askForConfirmation = false) {
+		if (askForConfirmation) {
+			setDeleteId(id);
+			return;
+		}
 		try {
-			await request(`${API_URL}/${id}`, { method: "DELETE" });
+			await sendRequest(`${API}/${id}`, { method: "DELETE" });
 			setDeleteId(null);
-			setNotice({
-				type: "success",
-				text: "Member removed from the directory."
-			});
-			await loadUsers();
-		} catch (error) {
-			setNotice({
-				type: "error",
-				text: error.message
-			});
+			showMessage("User deleted successfully.");
+			await fetchUsers();
+		} catch (requestError) {
+			showMessage(requestError.message, true);
 		}
 	}
-	async function logout() {
+	async function logoutUser() {
 		try {
-			await request(`${API_URL}/logout`, { method: "POST" });
+			await sendRequest(`${API}/logout`, { method: "POST" });
 			setCurrentUser(null);
-			setNotice({
-				type: "success",
-				text: "You are now signed out."
-			});
-		} catch (error) {
-			setNotice({
-				type: "error",
-				text: error.message
-			});
+			showMessage("Signed out successfully.");
+		} catch (requestError) {
+			showMessage(requestError.message, true);
 		}
 	}
-	let formTitle = "Add user";
-	let submitButtonText = "Add user";
-	if (mode === "login") {
-		formTitle = "Login";
-		submitButtonText = "Login";
-	}
-	if (editingId) {
-		formTitle = "Edit user";
-		submitButtonText = "Save";
-	}
-	if (submitting) submitButtonText = "Saving…";
-	return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)("main", {
 		className: "app-shell",
-		children: [
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "aurora aurora-one" }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "aurora aurora-two" }),
-			/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-				className: "page-wrap",
-				children: [
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("nav", {
-						className: "topbar",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("a", {
-								className: "brand",
-								href: "#top",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-									className: "brand-mark",
-									children: "U"
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "USERS" })]
-							}),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "database-status",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "status-pulse" }), "MongoDB connected"]
-							}),
-							currentUser ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "session-user",
-								children: [
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										className: "session-avatar",
-										children: initials(currentUser.username)
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										className: "session-name",
-										children: currentUser.username
-									}),
-									/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-										type: "button",
-										className: "text-button",
-										onClick: logout,
-										children: "Sign out"
-									})
-								]
-							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-								type: "button",
-								className: "text-button",
-								onClick: () => resetForm("login"),
-								children: "Member login"
-							})
-						]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", {
-						className: "hero",
-						id: "top",
-						children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "User management" }) })
-					}),
-					notice && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: `notice ${notice.type}`,
-						role: "status",
-						children: [
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: notice.type === "error" ? "!" : "✓" }),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: notice.text }),
-							/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-								type: "button",
-								onClick: () => setNotice(null),
-								"aria-label": "Dismiss",
-								children: "×"
-							})
-						]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-						className: "workspace-grid",
-						children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("aside", {
-							className: "account-panel",
-							children: [
-								!editingId && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "mode-switch",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-										type: "button",
-										className: mode === "create" ? "active" : "",
-										onClick: () => resetForm("create"),
-										children: "Create"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-										type: "button",
-										className: mode === "login" ? "active" : "",
-										onClick: () => resetForm("login"),
-										children: "Login"
-									})]
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-									className: "panel-heading",
-									children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: formTitle }) })
-								}),
-								/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("form", {
-									onSubmit: handleSubmit,
-									children: [
-										mode !== "login" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "field-row",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-												className: "field",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Name" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-													name: "username",
-													value: form.username,
-													onChange: (e) => setForm({
-														...form,
-														username: e.target.value
-													}),
-													required: true,
-													placeholder: "Enter name"
-												})]
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-												className: "field",
-												children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Role" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", {
-													name: "role",
-													value: form.role,
-													onChange: (e) => setForm({
-														...form,
-														role: e.target.value
-													}),
-													children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
-														value: "user",
-														children: "User"
-													}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", {
-														value: "admin",
-														children: "Admin"
-													})]
-												})]
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-											className: "field",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Email" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-												name: "email",
-												type: "email",
-												value: form.email,
-												onChange: (e) => setForm({
-													...form,
-													email: e.target.value
-												}),
-												required: true,
-												placeholder: "Enter email",
-												autoComplete: "email"
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-											className: "field",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Password" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-												name: "password",
-												type: "password",
-												value: form.password,
-												onChange: (e) => setForm({
-													...form,
-													password: e.target.value
-												}),
-												required: !editingId,
-												minLength: editingId ? void 0 : 8,
-												placeholder: editingId ? "New password (optional)" : "Enter password"
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-											className: "primary-button",
-											type: "submit",
-											disabled: submitting,
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: submitButtonText })
-										}),
-										editingId && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-											className: "cancel-button",
-											type: "button",
-											onClick: () => resetForm("create"),
-											children: "Cancel editing"
-										})
-									]
-								})
-							]
-						}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("section", {
-							className: "directory-panel",
-							children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "directory-head",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-									className: "user-title",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { children: "Users" }), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", {
-										className: "total-count",
-										children: [users.length, " users"]
-									})]
-								}), /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", {
-									className: "search-box",
-									children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-										"aria-hidden": "true",
-										children: "⌕"
-									}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("input", {
-										value: search,
-										onChange: (e) => setSearch(e.target.value),
-										placeholder: "Search users",
-										"aria-label": "Search users"
-									})]
-								})]
-							}), loading ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-								className: "state-box",
-								children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "loader" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: "Loading users…" })]
-							}) : filteredUsers.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "state-box",
-								children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: "No users found" })
-							}) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-								className: "member-grid",
-								children: filteredUsers.map((user, index) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("article", {
-									className: "member-card",
-									children: [
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
-											className: "card-topline",
-											children: [/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: ["#", String(index + 1).padStart(2, "0")] }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												className: `role-chip role-${user.role === "admin" ? "admin" : "user"}`,
-												children: user.role === "admin" ? "admin" : "user"
-											})]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											className: "avatar-wrap",
-											children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", {
-												className: "member-avatar",
-												children: initials(user.username)
-											})
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { children: user.username }),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", {
-											className: "member-email",
-											children: user.email
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("p", {
-											className: "joined-date",
-											children: ["Joined ", joined(user.createdAt)]
-										}),
-										/* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", {
-											className: "card-actions",
-											children: deleteId === user._id ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-												type: "button",
-												className: "danger-action",
-												onClick: () => deleteUser(user._id),
-												children: "Delete user"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-												type: "button",
-												onClick: () => setDeleteId(null),
-												children: "Cancel"
-											})] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-												type: "button",
-												onClick: () => editUser(user),
-												children: "Edit"
-											}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
-												type: "button",
-												className: "delete-action",
-												onClick: () => setDeleteId(user._id),
-												children: "Delete"
-											})] })
-										})
-									]
-								}, user._id))
-							})]
-						})]
-					}),
-					/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { children: [
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "USERS / MONGODB" }),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "Built on MongoDB" }),
-						/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: (/* @__PURE__ */ new Date()).getFullYear() })
-					] })
-				]
-			})
-		]
+		children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+			className: "page-wrap",
+			children: [
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Navbar, {
+					currentUser,
+					onLogin: () => resetForm("login"),
+					onLogout: logoutUser
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", {
+					className: "hero",
+					id: "top",
+					children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h1", { children: "User management" })
+				}),
+				message && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: error ? "notice error" : "notice",
+					role: "status",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { children: message }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("button", {
+						type: "button",
+						onClick: () => setMessage(""),
+						children: "Close"
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", {
+					className: "workspace-grid",
+					children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)(AdminTable, {
+						form,
+						mode,
+						editingId,
+						submitting,
+						onChange: handleChange,
+						onSubmit: handleSubmit,
+						onModeChange: resetForm,
+						onCancel: resetForm
+					}), /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserTable, {
+						users: filteredUsers,
+						totalUsers: users.length,
+						search,
+						loading,
+						deleteId,
+						onSearch: (event) => setSearch(event.target.value),
+						onEdit: editUser,
+						onDelete: deleteUser,
+						onCancelDelete: () => setDeleteId(null)
+					})]
+				}),
+				/* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { children: [/* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "USERS / MONGODB" }), /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: (/* @__PURE__ */ new Date()).getFullYear() })] })
+			]
+		})
 	});
 }
 //#endregion
+//#region src/App.jsx
+function App() {
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Home, {});
+}
+//#endregion
 //#region src/main.jsx
-(0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MongoUsersApp, {}) }));
+(0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}) }));
 //#endregion
