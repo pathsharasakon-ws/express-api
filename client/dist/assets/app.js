@@ -10406,8 +10406,127 @@ function UserTable({ users, totalUsers, search, loading, deleteId, onSearch, onE
 	});
 }
 //#endregion
-//#region src/views/Home.jsx
+//#region src/context/AuthContext.jsx
+var API$1 = "/api/v2/users";
+var AuthContext = (0, import_react.createContext)(null);
+async function sendRequest$1(url, options = {}) {
+	const response = await fetch(url, {
+		credentials: "include",
+		...options
+	});
+	const data = await response.json();
+	if (!response.ok) throw new Error(data.error || data.message || "Request failed");
+	return data;
+}
+function AuthProvider({ children }) {
+	const [currentUser, setCurrentUser] = (0, import_react.useState)(null);
+	async function checkLogin() {
+		try {
+			const data = await sendRequest$1(`${API$1}/auth`);
+			setCurrentUser(data.data);
+		} catch {
+			setCurrentUser(null);
+		}
+	}
+	async function loginUser(email, password) {
+		const data = await sendRequest$1(`${API$1}/login`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				email,
+				password
+			})
+		});
+		setCurrentUser(data.user);
+		return data.user;
+	}
+	async function logoutUser() {
+		await sendRequest$1(`${API$1}/logout`, { method: "POST" });
+		setCurrentUser(null);
+	}
+	const value = {
+		currentUser,
+		checkLogin,
+		loginUser,
+		logoutUser
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AuthContext.Provider, {
+		value,
+		children
+	});
+}
+function useAuth() {
+	return (0, import_react.useContext)(AuthContext);
+}
+//#endregion
+//#region src/context/UserContext.jsx
 var API = "/api/v2/users";
+var UserContext = (0, import_react.createContext)(null);
+async function sendRequest(url, options = {}) {
+	const response = await fetch(url, {
+		credentials: "include",
+		...options
+	});
+	const data = await response.json();
+	if (!response.ok) throw new Error(data.error || data.message || "Request failed");
+	return data;
+}
+function UserProvider({ children }) {
+	const [users, setUsers] = (0, import_react.useState)([]);
+	const [loading, setLoading] = (0, import_react.useState)(true);
+	async function fetchUsers() {
+		setLoading(true);
+		try {
+			const data = await sendRequest(API);
+			setUsers(data);
+		} finally {
+			setLoading(false);
+		}
+	}
+	async function createUser(form) {
+		await sendRequest(API, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(form)
+		});
+		await fetchUsers();
+	}
+	async function updateUser(id, form) {
+		const body = {
+			username: form.username,
+			role: form.role,
+			email: form.email
+		};
+		if (form.password) body.password = form.password;
+		await sendRequest(`${API}/${id}`, {
+			method: "PUT",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body)
+		});
+		await fetchUsers();
+	}
+	async function deleteUser(id) {
+		await sendRequest(`${API}/${id}`, { method: "DELETE" });
+		await fetchUsers();
+	}
+	const value = {
+		users,
+		loading,
+		fetchUsers,
+		createUser,
+		updateUser,
+		deleteUser
+	};
+	return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserContext.Provider, {
+		value,
+		children
+	});
+}
+function useUsers() {
+	return (0, import_react.useContext)(UserContext);
+}
+//#endregion
+//#region src/views/Home.jsx
 var EMPTY_FORM = {
 	username: "",
 	role: "user",
@@ -10415,58 +10534,37 @@ var EMPTY_FORM = {
 	password: ""
 };
 function Home() {
-	const [users, setUsers] = (0, import_react.useState)([]);
+	const { currentUser, checkLogin, loginUser, logoutUser } = useAuth();
+	const { users, loading, fetchUsers, createUser, updateUser, deleteUser } = useUsers();
 	const [form, setForm] = (0, import_react.useState)(EMPTY_FORM);
 	const [mode, setMode] = (0, import_react.useState)("create");
 	const [editingId, setEditingId] = (0, import_react.useState)(null);
 	const [deleteId, setDeleteId] = (0, import_react.useState)(null);
-	const [currentUser, setCurrentUser] = (0, import_react.useState)(null);
 	const [search, setSearch] = (0, import_react.useState)("");
 	const [message, setMessage] = (0, import_react.useState)("");
 	const [error, setError] = (0, import_react.useState)(false);
-	const [loading, setLoading] = (0, import_react.useState)(true);
 	const [submitting, setSubmitting] = (0, import_react.useState)(false);
-	const filteredUsers = (0, import_react.useMemo)(() => {
+	function filterUsers() {
 		const keyword = search.trim().toLowerCase();
 		if (!keyword) return users;
 		return users.filter((user) => {
-			const username = user.username?.toLowerCase() || "";
-			const email = user.email?.toLowerCase() || "";
-			const role = user.role?.toLowerCase() || "";
+			const username = user.username.toLowerCase();
+			const email = user.email.toLowerCase();
+			const role = user.role.toLowerCase();
 			return username.includes(keyword) || email.includes(keyword) || role.includes(keyword);
 		});
-	}, [search, users]);
-	(0, import_react.useEffect)(() => {
-		fetchUsers();
-		checkLogin();
-	}, []);
-	async function sendRequest(url, options = {}) {
-		const response = await fetch(url, {
-			credentials: "include",
-			...options
-		});
-		const data = await response.json();
-		if (!response.ok) throw new Error(data.error || data.message || "Request failed");
-		return data;
 	}
-	async function fetchUsers() {
-		setLoading(true);
+	const filteredUsers = filterUsers();
+	(0, import_react.useEffect)(() => {
+		loadPageData();
+	}, []);
+	async function loadPageData() {
 		try {
-			const data = await sendRequest(API);
-			setUsers(data);
+			await fetchUsers();
 		} catch (requestError) {
 			showMessage(requestError.message, true);
-		} finally {
-			setLoading(false);
 		}
-	}
-	async function checkLogin() {
-		try {
-			const data = await sendRequest(`${API}/auth`);
-			setCurrentUser(data.data);
-		} catch {
-			setCurrentUser(null);
-		}
+		await checkLogin();
 	}
 	function showMessage(text, isError = false) {
 		setMessage(text);
@@ -10490,53 +10588,21 @@ function Home() {
 		setSubmitting(true);
 		setMessage("");
 		try {
-			if (mode === "login") await loginUser();
-			else if (editingId) await updateUser();
-			else await createUser();
+			if (mode === "login") showMessage(`Welcome back, ${(await loginUser(form.email, form.password)).username}.`);
+			else if (editingId) {
+				await updateUser(editingId, form);
+				resetForm();
+				showMessage("User updated successfully.");
+			} else {
+				await createUser(form);
+				setForm(EMPTY_FORM);
+				showMessage("User added successfully.");
+			}
 		} catch (requestError) {
 			showMessage(requestError.message, true);
 		} finally {
 			setSubmitting(false);
 		}
-	}
-	async function loginUser() {
-		const body = {
-			email: form.email,
-			password: form.password
-		};
-		const data = await sendRequest(`${API}/login`, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(body)
-		});
-		setCurrentUser(data.user);
-		showMessage(`Welcome back, ${data.user.username}.`);
-	}
-	async function createUser() {
-		await sendRequest(API, {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(form)
-		});
-		setForm(EMPTY_FORM);
-		showMessage("User added successfully.");
-		await fetchUsers();
-	}
-	async function updateUser() {
-		const body = {
-			username: form.username,
-			role: form.role,
-			email: form.email
-		};
-		if (form.password) body.password = form.password;
-		await sendRequest(`${API}/${editingId}`, {
-			method: "PUT",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(body)
-		});
-		resetForm();
-		showMessage("User updated successfully.");
-		await fetchUsers();
 	}
 	function editUser(user) {
 		setEditingId(user._id);
@@ -10550,24 +10616,22 @@ function Home() {
 			password: ""
 		});
 	}
-	async function deleteUser(id, askForConfirmation = false) {
+	async function handleDelete(id, askForConfirmation = false) {
 		if (askForConfirmation) {
 			setDeleteId(id);
 			return;
 		}
 		try {
-			await sendRequest(`${API}/${id}`, { method: "DELETE" });
+			await deleteUser(id);
 			setDeleteId(null);
 			showMessage("User deleted successfully.");
-			await fetchUsers();
 		} catch (requestError) {
 			showMessage(requestError.message, true);
 		}
 	}
-	async function logoutUser() {
+	async function handleLogout() {
 		try {
-			await sendRequest(`${API}/logout`, { method: "POST" });
-			setCurrentUser(null);
+			await logoutUser();
 			showMessage("Signed out successfully.");
 		} catch (requestError) {
 			showMessage(requestError.message, true);
@@ -10581,7 +10645,7 @@ function Home() {
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)(Navbar, {
 					currentUser,
 					onLogin: () => resetForm("login"),
-					onLogout: logoutUser
+					onLogout: handleLogout
 				}),
 				/* @__PURE__ */ (0, import_jsx_runtime.jsx)("header", {
 					className: "hero",
@@ -10616,7 +10680,7 @@ function Home() {
 						deleteId,
 						onSearch: (event) => setSearch(event.target.value),
 						onEdit: editUser,
-						onDelete: deleteUser,
+						onDelete: handleDelete,
 						onCancelDelete: () => setDeleteId(null)
 					})]
 				}),
@@ -10632,5 +10696,5 @@ function App() {
 }
 //#endregion
 //#region src/main.jsx
-(0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}) }));
+(0, import_client.createRoot)(document.getElementById("root")).render(/* @__PURE__ */ (0, import_jsx_runtime.jsx)(import_react.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(AuthProvider, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(UserProvider, { children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(App, {}) }) }) }));
 //#endregion

@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AdminTable } from "../components/AdminTable.jsx";
 import { Navbar } from "../components/Navbar.jsx";
 import { UserTable } from "../components/UserTable.jsx";
-
-const API = "/api/v2/users";
+import { useAuth } from "../context/AuthContext.jsx";
+import { useUsers } from "../context/UserContext.jsx";
 
 const EMPTY_FORM = {
   username: "",
@@ -13,19 +13,25 @@ const EMPTY_FORM = {
 };
 
 export default function Home() {
-  const [users, setUsers] = useState([]);
+  const { currentUser, checkLogin, loginUser, logoutUser } = useAuth();
+  const {
+    users,
+    loading,
+    fetchUsers,
+    createUser,
+    updateUser,
+    deleteUser,
+  } = useUsers();
   const [form, setForm] = useState(EMPTY_FORM);
   const [mode, setMode] = useState("create");
   const [editingId, setEditingId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
   const [search, setSearch] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const filteredUsers = useMemo(() => {
+  function filterUsers() {
     const keyword = search.trim().toLowerCase();
 
     if (!keyword) {
@@ -33,9 +39,9 @@ export default function Home() {
     }
 
     return users.filter((user) => {
-      const username = user.username?.toLowerCase() || "";
-      const email = user.email?.toLowerCase() || "";
-      const role = user.role?.toLowerCase() || "";
+      const username = user.username.toLowerCase();
+      const email = user.email.toLowerCase();
+      const role = user.role.toLowerCase();
 
       return (
         username.includes(keyword) ||
@@ -43,48 +49,22 @@ export default function Home() {
         role.includes(keyword)
       );
     });
-  }, [search, users]);
+  }
+
+  const filteredUsers = filterUsers();
 
   useEffect(() => {
-    fetchUsers();
-    checkLogin();
+    loadPageData();
   }, []);
 
-  async function sendRequest(url, options = {}) {
-    const response = await fetch(url, {
-      credentials: "include",
-      ...options,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || data.message || "Request failed");
-    }
-
-    return data;
-  }
-
-  async function fetchUsers() {
-    setLoading(true);
-
+  async function loadPageData() {
     try {
-      const data = await sendRequest(API);
-      setUsers(data);
+      await fetchUsers();
     } catch (requestError) {
       showMessage(requestError.message, true);
-    } finally {
-      setLoading(false);
     }
-  }
 
-  async function checkLogin() {
-    try {
-      const data = await sendRequest(`${API}/auth`);
-      setCurrentUser(data.data);
-    } catch {
-      setCurrentUser(null);
-    }
+    await checkLogin();
   }
 
   function showMessage(text, isError = false) {
@@ -115,67 +95,22 @@ export default function Home() {
 
     try {
       if (mode === "login") {
-        await loginUser();
+        const user = await loginUser(form.email, form.password);
+        showMessage(`Welcome back, ${user.username}.`);
       } else if (editingId) {
-        await updateUser();
+        await updateUser(editingId, form);
+        resetForm();
+        showMessage("User updated successfully.");
       } else {
-        await createUser();
+        await createUser(form);
+        setForm(EMPTY_FORM);
+        showMessage("User added successfully.");
       }
     } catch (requestError) {
       showMessage(requestError.message, true);
     } finally {
       setSubmitting(false);
     }
-  }
-
-  async function loginUser() {
-    const body = {
-      email: form.email,
-      password: form.password,
-    };
-
-    const data = await sendRequest(`${API}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    setCurrentUser(data.user);
-    showMessage(`Welcome back, ${data.user.username}.`);
-  }
-
-  async function createUser() {
-    await sendRequest(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-
-    setForm(EMPTY_FORM);
-    showMessage("User added successfully.");
-    await fetchUsers();
-  }
-
-  async function updateUser() {
-    const body = {
-      username: form.username,
-      role: form.role,
-      email: form.email,
-    };
-
-    if (form.password) {
-      body.password = form.password;
-    }
-
-    await sendRequest(`${API}/${editingId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-
-    resetForm();
-    showMessage("User updated successfully.");
-    await fetchUsers();
   }
 
   function editUser(user) {
@@ -191,26 +126,24 @@ export default function Home() {
     });
   }
 
-  async function deleteUser(id, askForConfirmation = false) {
+  async function handleDelete(id, askForConfirmation = false) {
     if (askForConfirmation) {
       setDeleteId(id);
       return;
     }
 
     try {
-      await sendRequest(`${API}/${id}`, { method: "DELETE" });
+      await deleteUser(id);
       setDeleteId(null);
       showMessage("User deleted successfully.");
-      await fetchUsers();
     } catch (requestError) {
       showMessage(requestError.message, true);
     }
   }
 
-  async function logoutUser() {
+  async function handleLogout() {
     try {
-      await sendRequest(`${API}/logout`, { method: "POST" });
-      setCurrentUser(null);
+      await logoutUser();
       showMessage("Signed out successfully.");
     } catch (requestError) {
       showMessage(requestError.message, true);
@@ -223,7 +156,7 @@ export default function Home() {
         <Navbar
           currentUser={currentUser}
           onLogin={() => resetForm("login")}
-          onLogout={logoutUser}
+          onLogout={handleLogout}
         />
 
         <header className="hero" id="top">
@@ -259,7 +192,7 @@ export default function Home() {
             deleteId={deleteId}
             onSearch={(event) => setSearch(event.target.value)}
             onEdit={editUser}
-            onDelete={deleteUser}
+            onDelete={handleDelete}
             onCancelDelete={() => setDeleteId(null)}
           />
         </div>
